@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Jade Delight</title>
+<script src=
+"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+    </script>
+</head>
+
+<body>
+	<style>
+		form {
+			display: table;
+		}
+		p {
+			display: table-row;
+		}
+
+		label {
+			display: table-cell;
+		}
+
+		input {
+			display: table-cell;
+		}
+		
+	</style>
+<script>
+
+function MenuItem(name, cost)
+{
+	this.name = name;
+	this.cost=cost;
+}
+
+menuItems = new Array(
+	new MenuItem("Chicken Chop Suey", 5.5),
+	new MenuItem("Sweet and Sour Pork", 7.25),
+	new MenuItem("Shrimp Lo Mein", 6.80),
+	new MenuItem("Moo Shi Chicken", 9.50),
+	new MenuItem("Fried Rice", 3.25)
+);
+
+function makeSelect(name, minRange, maxRange)
+{
+	var t= "";
+	t = "<select name='" + name + "' size='1'>";
+	for (j=minRange; j<=maxRange; j++)
+	   t += "<option>" + j + "</option>";
+	t+= "</select>"; 
+	return t;
+}
+
+function td(content, className="")
+{
+	return "<td class = '" + className + "'>" + content + "</td>";
+}
+	
+</script>
+
+<h1>Jade Delight</h1>
+<form>
+
+<p class="userInfo"><label>First Name:</label> <input type="text"  name='fname' /></p>
+<p class="userInfo"><label>Last Name*:</label>  <input type="text"  name='lname' /></p>
+<p class="userInfo address"><label>Street*:</label> <input type="text" name='street' /></p>
+<p class="userInfo address"><label>City*:</label> <input type="text" name='city' /></p>
+<p class="userInfo"><label>Phone*:</label> <input type="text"  name='phone' /></p>
+
+<p> 
+	<input type="radio"  name="p_or_d" value = "pickup" checked="checked"/>Pickup  
+	<input type="radio"  name='p_or_d' value = 'delivery'/>
+	Delivery
+</p>
+<table border="0" cellpadding="3">
+  <tr>
+    <th>Select Item</th>
+    <th>Item Name</th>
+    <th>Cost Each</th>
+    <th>Total Cost</th>
+  </tr>
+<script>
+
+  var s = "";
+  for (i=0; i< menuItems.length; i++)
+  {
+	  s += "<tr>";
+	  s += td(makeSelect("quan" + i, 0, 10),"selectQuantity");
+	  s += td(menuItems[i].name, "itemName");
+	  s += td("$" +menuItems[i].cost.toFixed(2), "cost");
+	  s += td("$<input type='text' name='cost'/>", "totalCost");
+	  s+= "</tr>";
+  }
+  document.writeln(s);
+
+</script>
+</table>
+<p class="subtotal totalSection"><label>Subtotal</label>: 
+   $ <input type="text"  name='subtotal' id="subtotal" />
+</p>
+<p class="tax totalSection"><label>Mass tax 6.25%:</label>
+  $ <input type="text"  name='tax' id="tax" />
+</p>
+<p class="total totalSection"><label>Total:</label> $ <input type="text"  name='total' id="total" />
+</p>
+
+<input type = "button" value = "Submit Order" />
+
+
+<script language="javascript">
+
+	
+	// function that checks if pick up is checked, if it is it hides delivery info
+	function pickup_check()
+	{
+	var pickup = document.getElementsByName("p_or_d");
+	var delivery_info = document.getElementsByClassName("userInfo address");
+
+	if( pickup[0].checked)
+	{
+		delivery_info[0].style.display = "none";
+		delivery_info[1].style.display = "none";
+	}
+	else
+	{
+		delivery_info[0].style.display = "block";
+		delivery_info[1].style.display = "block";
+	}
+
+	}
+
+			// sets inital values to a float 0 
+
+	document.getElementById("tax").value = 0;
+	document.getElementById("subtotal").value = 0;
+	document.getElementById("total").value = 0;
+	var running = 0.0;
+	var total = 0.0;
+
+	for(let i = 0; i < menuItems.length; i++)
+		{
+			document.getElementsByName("cost")[i].value = 0.0;
+		}
+
+	window.setInterval(pickup_check, 100);
+
+		// each time something is selected in the drop down this script runs
+		$("select").on("change", function () 
+		{
+			quant = this.value;
+			name = this.name;
+			price_updater(quant, name);
+		
+		});
+		
+
+		// updates the price next to each item
+	function price_updater(quant, name)
+	{
+		item = parseInt(name.charAt(4));
+
+		item_cos = (menuItems[item].cost) * quant;
+		item_cost = item_cos.toFixed(2);
+		
+		item_box = document.getElementsByName("cost")[item];
+
+		item_box.value = item_cost;
+
+		subtotal_update();
+	}
+
+		// updates the subtotal  
+	function subtotal_update()
+	{
+		sub_box = document.getElementById("subtotal");
+		var running = 0.0;
+		var total = 0.0;
+
+		for(let i = 0; i < menuItems.length; i++)
+		{
+			runnin = document.getElementsByName("cost")[i].value;
+			running = parseFloat(runnin);
+			total += parseFloat(running);
+		}
+		sub_box.value = parseFloat(total).toFixed(2);
+		tax_total_update();
+	}
+
+		//updates tax amount and total price
+	function tax_total_update()
+	{
+		tax_box = document.getElementById("tax");
+		total_box = document.getElementById("total");
+		sub_value = parseFloat(document.getElementById("subtotal").value);
+		taxed = (sub_value * .0625).toFixed(2);
+		tax_box.value = taxed;
+		final = parseFloat(taxed) +  parseFloat(sub_value);
+		total_box.value = final;
+		
+	}
+
+
+
+	// validates the form when the user clicks on it
+	function validateForm()
+	{
+		let x = document.forms[0]["street"].value;
+		let y = document.forms[0]["city"].value;
+		let z = document.forms[0]["phone"].value;
+		let l = document.forms[0]["lname"].value;
+		money = parseFloat(document.getElementById("total").value);
+		proper = true;
+		phone = false;
+		delivery = delivery_thing(x,y);	
+
+		if(l == "")
+		{
+			alert(" Please give us your last name for the order");
+			proper = false;
+		}
+
+		if(z.length == 7 || z.length == 10)
+		{
+			phone = true;
+			proper = true;
+		}
+
+		if(money <= 0)
+		{
+			alert("You have to order at least one item");
+			proper = false;
+		}
+		if(phone == false)
+			{
+				alert("Put in a proper phone number please ( 7 or 10 digits)");
+				proper = false;
+			}
+		if( proper == true)
+		{
+
+			alert("Thanks so much for ordering from us");
+			new_window(delivery);
+		}
+	}
+	// if the button is clicked the validate form function will run
+	$("input[type=button]").click(function () {
+
+		validateForm();
+	});
+
+	// this will run to check if delivery was clicked
+function delivery_thing(street, city)
+{
+	var pickup = document.getElementsByName("p_or_d");
+	delivery = false;
+	if( pickup[0].checked)
+	{
+		delivery = false;
+	}
+	else
+	{
+		delivery = true;
+		if(street == "")
+		{
+			alert(" We need the street if you want your food");
+			proper = false;
+		}
+
+		if(city== "")
+		{
+			alert("We need what city for your order");
+			proper = false;
+		}
+
+	}
+	return delivery;
+}
+
+// this creates the new window and writes the code for the new window as well
+function new_window(delivery)
+{
+
+	var dated = new Date()
+	var added;
+
+	if(delivery == true)
+	{
+		added = new Date(dated.getTime() + 40*60000);
+	}
+	else
+	{
+		added = new Date(dated.getTime() + 20*60000);
+	}
+
+	tax = document.getElementById("tax").value;
+	subtotal = document.getElementById("subtotal").value;
+	total = document.getElementById("total").value;
+
+	chicken_total = parseFloat(document.getElementsByName("cost")[0].value);
+	chicken_quant = parseInt(chicken_total / 5.5);
+
+	pork_total = parseFloat(document.getElementsByName("cost")[1].value);
+	pork_quant = parseInt(pork_total / 7.25);
+
+	shrimp_total = parseFloat(document.getElementsByName("cost")[2].value);
+	shrimp_quant = parseInt(shrimp_total / 6.8);
+
+	moo_total = parseFloat(document.getElementsByName("cost")[3].value);
+	moo_quant = parseInt(moo_total / 9.5);
+
+	rice_total = parseFloat(document.getElementsByName("cost")[4].value);
+	rice_quant = parseInt(rice_total / 3.25);
+
+	console.log(chicken_quant);
+
+
+	var newwindow = window.open("","MsgWindow", "width=1000, height=1000");
+	newwindow.document.write("<h1> Thank you for ordering from Jade's Delight. </h1> <br> <p> Your order will be ready on " + added + " please be ready for it </p> <br> <h2> Here is a summary. </h2><br> <p> Total cost: " + total + "  Subtotal: " + subtotal + " Tax: " + tax + "</p> <br> <p> You ended up ordering <br> " + chicken_quant + " Chicken Chop Suey for 5.50$ each totaling " + chicken_total + " dollars <br>" + pork_quant + " Sweet and Sour Pork for 7.25$ each totaling " + pork_total + " dollars <br>" + shrimp_quant +" Shrimp Lo Mein for 6.80$ each totaling "  + shrimp_total +  " dollars <br>" + moo_quant + " Moo Shi Chicken for 9.50$ each totaling " + moo_total + " dollars <br>" + rice_quant + " Fried Rice for 3.25$ each totaling " + rice_total + " dollars <br> Have an amazing day and Enjoy your food! </p>"); 
+}
+
+</script>
+
+
+
+
+</form>
+
+
+
+</body>
+</html>
